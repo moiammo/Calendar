@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="IntelliJProJect" />
+        <module name="Calendar" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="IntelliJProJect" target="1.8" />
+      <module name="Calendar" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

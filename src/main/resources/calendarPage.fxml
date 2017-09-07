@@ -76,10 +76,11 @@
             </GridPane>
             <TextField fx:id="titleField" maxWidth="1.7976931348623157E308" promptText="enter title here" GridPane.columnIndex="1" />
             <TextField fx:id="descField" maxWidth="1.7976931348623157E308" prefHeight="171.0" prefWidth="155.0" promptText="Enter Description here" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleBtnAdd" text="add appointment" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleBtnAdd" text="Add Appointment" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Button fx:id="btnEdit" alignment="CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleBtnEdit" text="Go to Edit Page" GridPane.rowIndex="3" />
          </children>
       </GridPane>
-      <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="288.0" text="  Appointment adder " GridPane.rowIndex="1">
+      <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="288.0" text="  Appointment Adder" GridPane.rowIndex="1">
          <font>
             <Font size="18.0" />
          </font>
@@ -90,5 +91,18 @@
             <Font size="18.0" />
          </font>
       </Label>
+      <GridPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="204.0" minWidth="10.0" prefWidth="54.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="208.0" minWidth="10.0" prefWidth="151.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="191.0" minWidth="10.0" prefWidth="59.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Button fx:id="BtnDelAll" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleBtnDelAll" text="Delete all Appointment" GridPane.columnIndex="1" />
+         </children>
+      </GridPane>
    </children>
 </GridPane>

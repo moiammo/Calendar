@@ -14,29 +14,41 @@ import java.util.Date;
 public class Appointment {
     private String title ;
     private String description ;
+    private Integer id ;
+    private  DateFormat dateTimeFormat ;
 
-//    private String hour ;
+
+    //    private String hour ;
 //    private String minute ;
     private Date date;
 //    private int dayNum ;
 //    private int monthNum ;
 //    private int yearNum ;
 
-    public Appointment(String title,String desc,int dayNum,int monthNum,int yearNum,String hour,String minute) throws ParseException {
+    public Appointment(String title,String desc,int dayNum,int monthNum,int yearNum,String hour,String minute,int id) throws ParseException {
+        this.id = id ;
         this.title = title ;
         description = desc ;
 
 
-        DateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        dateTimeFormat = new SimpleDateFormat("DD/MM/yyyy HH:mm");
         date = dateTimeFormat.parse(dayNum+"/"+monthNum+"/"+yearNum+" "+hour+":"+minute);
     }
 
     public String getString() {
-        String dateStr = DateFormat.getInstance().format(date);
+        String dateStr = dateTimeFormat.format(date);
 //        System.out.println("Reached here");
         return "Appointment : " + title + "\nDescription : "+ description + "\nOn : " +dateStr+ "\n" ;
 
     }
+
+    public Integer getId(){
+        return this.id ;
+    }
+
+
+
+
 
 
 }

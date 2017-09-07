@@ -22,7 +22,7 @@ public class ControllerTest {
     public void setUp() throws ParseException {
 
        testAppointment = new Appointment("For testing","With JUnit",
-               31,8,2017,"11","50");
+               31,8,2017,"11","50",0);
 
     }
 
