@@ -25,20 +25,21 @@ public class Appointment {
 //    private int monthNum ;
 //    private int yearNum ;
 
-    public Appointment(String title,String desc,int dayNum,int monthNum,int yearNum,String hour,String minute,int id) throws ParseException {
+    public Appointment(String title,String desc,int dayNum,int monthNum,int yearNum,int hour,int minute,int id) throws ParseException {
         this.id = id ;
         this.title = title ;
         description = desc ;
 
 
-        dateTimeFormat = new SimpleDateFormat("DD/MM/yyyy HH:mm");
+        dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         date = dateTimeFormat.parse(dayNum+"/"+monthNum+"/"+yearNum+" "+hour+":"+minute);
     }
 
     public String getString() {
         String dateStr = dateTimeFormat.format(date);
+
 //        System.out.println("Reached here");
-        return "Appointment : " + title + "\nDescription : "+ description + "\nOn : " +dateStr+ "\n" ;
+        return "###"+id+"###\nAppointment : " + title + "\nDescription : "+ description + "\nOn : " +dateStr+ "\n" ;
 
     }
 

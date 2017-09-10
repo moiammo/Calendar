@@ -9,8 +9,8 @@ public class StartApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("calendarPage.fxml"));
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 514, 404));
+        primaryStage.setTitle("Calendar");
+        primaryStage.setScene(new Scene(root, 533, 417));
         primaryStage.show();
     }
 

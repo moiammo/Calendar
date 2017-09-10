@@ -22,16 +22,18 @@ public class ControllerTest {
     public void setUp() throws ParseException {
 
        testAppointment = new Appointment("For testing","With JUnit",
-               31,8,2017,"11","50",0);
+               31,8,2017,11,50,0);
 
     }
 
     @Test
-    public void test() {
+    public void testAddAppointmentToArray() {
 
     //"Appointment : " + title + "\nDescription : "+ description + "\nOn : " +dateStr+ "\n" ;
 //     date = dateTimeFormat.parse(dayNum+"/"+monthNum+"/"+yearNum+" "+hour+":"+minute);
     assertEquals("test",testAppointment.getString(), "Appointment : For testing\nDescription : With JUnit\nOn : 8/31/17 11:50 AM\n");
     }
+
+
 
 }
