@@ -14,7 +14,7 @@ import java.util.Date;
 public class Appointment {
     private String title ;
     private String description ;
-    private Integer id ;
+    private int id ;
     private  DateFormat dateTimeFormat ;
 
 

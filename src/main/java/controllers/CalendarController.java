@@ -17,6 +17,8 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import Services.DatabaseService;
+
 public class CalendarController  {
 
     @FXML
@@ -38,26 +40,18 @@ public class CalendarController  {
     @FXML
     private Button btnEdit;
     @FXML
-    private Button BtnDelAll ;
-    private int id;
-//
-//
-//
-//    private void increaseIdNum(){
-//        id += 1;
-//    }
-//
-//    public int getId(){
-//        return id ;
-//    }
+    private DatePicker showDatePicker ;
+    @FXML
+    private TextField deleteIdField;
 
+//    private int id;
     private ArrayList<String> reptCBoxList = new ArrayList<>();
     private ArrayList<Appointment> apArray = new ArrayList<>();
-
-
+    private DatabaseService databaseService;
 
     @FXML
     private void initialize(){
+        databaseService = new DatabaseService();
         reptCBoxList.add("Never");reptCBoxList.add("Day");reptCBoxList.add("Week");
         reptCBoxList.add("Month");reptCBoxList.add("Year");
         reptCBox.getItems().addAll(reptCBoxList) ;
@@ -73,25 +67,16 @@ public class CalendarController  {
     }
 
     @FXML
-    private void handleBtnDelAll(){
+    private void handleBtnDelAll() throws ParseException{
         try
         {
-            Class.forName("org.sqlite.JDBC");
-            String dbURL = "jdbc:sqlite:AppointmentsDB.db";
-            Connection conn = DriverManager.getConnection(dbURL);
-            if (conn != null) {
-//                System.out.println("Connected to the database....");
-                String query = "delete From Appointments" ;
-
-                Statement statement = conn.createStatement();
-                statement.executeUpdate(query);
-
-                statement.close();
-                conn.close();
-            }
+           databaseService.establishConnection();
+           databaseService.doExecuteUpdate("delete From Appointments");
+           databaseService.closeConnection();
         }
         catch (ClassNotFoundException ex) {ex.printStackTrace(); }
         catch (SQLException ex) {ex.printStackTrace();}
+
         apArray.clear();
         handleBtnShowAll();
 
@@ -111,11 +96,10 @@ public class CalendarController  {
         int id = getLastIdFromDB();
 
         try {
-            addAppointment(title,desc,day,month,year,hour,minute);
-//            System.out.println(reptCBox.getValue());
+            insertAppointmentToDB(title,desc,day,month,year,hour,minute);
 
-        if (!("Never".equals(reptCBox.getValue()))){
-            repeatEvery(reptCBox.getValue(),title,desc,day,month,year,hour,minute,id);
+            if (!("Never".equals(reptCBox.getValue()))){
+                repeatEvery(time,reptCBox.getValue(),title,desc,day,month,year,hour,minute,id);
             }
 
         }
@@ -143,66 +127,72 @@ public class CalendarController  {
     }
 
 
-    private void insertAppointmentToDB(String title,String desc,int dayNum,int monthNum,int yearNum,int hour,int minute) {
-        //Called in addAppointment
+    private void insertAppointmentToDB(String title,String desc,int dayNum,int monthNum,int yearNum,int hour,int minute) throws ParseException {
         try
         {
-            Class.forName("org.sqlite.JDBC");
-            String dbURL = "jdbc:sqlite:AppointmentsDB.db";
-            Connection conn = DriverManager.getConnection(dbURL);
-            if (conn != null) {
-//                System.out.println("Connected to the database....");
-                String query = "insert into Appointments(title,desc,dayNum,monthNum,yearNum,hour,minute) " +
+            databaseService.establishConnection();
+            String query = "insert into Appointments(title,desc,dayNum,monthNum,yearNum,hour,minute) " +
                         "values (\'"+titleField.getText()+"\',\'"+descField.getText()+"\',\'"+dayNum+"\'"+",\'"+monthNum+"\',\'"+yearNum
                         +"\',\'"+hour+"\',\'"+minute+"\')";
-//                System.out.println(query);
-                Statement statement = conn.createStatement();
-                statement.executeUpdate(query);
-                statement.close();
-                conn.close();
-            }
+            databaseService.doExecuteUpdate(query);
+            databaseService.closeConnection();
+
+            apArray = loadDataFromDB();
         }
-        catch (ClassNotFoundException ex) {ex.printStackTrace(); }
-        catch (SQLException ex) {ex.printStackTrace();}
+
+        catch (ClassNotFoundException ex) { ex.printStackTrace(); }
+        catch (SQLException ex) { ex.printStackTrace();}
+        handleBtnShowAll();
     }
 
-    private void repeatEvery(String repeatition,String title,String desc,int day,int month,int year,
+    private void repeatEvery(LocalDate time,String repeatition,String title,String desc,int day,int month,int year,
                              int hour,int minute,int id) throws ParseException{
         int reptNum = Integer.parseInt(reptField.getText()) ;
 
         if ("Day".equals(repeatition)){
-            for (int i=1;i<reptNum;i++){ //i for date adding
-                addAppointment(title,desc,day+(i*reptNum),month,year,hour,minute);
+            for (int i=1;i<=30;i++){ //i for date adding
+                 LocalDate addedDate = time.plusDays(reptNum*i);
+                int newDay = addedDate.getDayOfMonth();
+                int newMonth = addedDate.getMonthValue();
+                int newYear = addedDate.getYear() ;
+                insertAppointmentToDB(title,desc,newDay,newMonth,newYear,hour,minute);
             }
-//            System.out.println("Done repeat "+ reptNum +"day");
         }
         else if ("Week".equals(repeatition)){
-            for (int i=1;i<reptNum;i++){
-                addAppointment(title,desc,day+(i*7),month,year,hour,minute);
+            for (int i=1;i<=52;i++){
+                LocalDate addedDate = time.plusWeeks(reptNum*i);
+                int newDay = addedDate.getDayOfMonth();
+                int newMonth = addedDate.getMonthValue();
+                int newYear = addedDate.getYear() ;
+                insertAppointmentToDB(title,desc,newDay,newMonth,newYear,hour,minute);
             }
-//            System.out.println("Done repeat "+ reptNum +"week");
         }
 
         else if ("Month".equals(repeatition)){
-            for (int i=1;i<reptNum;i++){
-                addAppointment(title,desc,day,month+i,year,hour,minute);
+            for (int i=1;i<=12;i++){
+                LocalDate addedDate = time.plusMonths(reptNum*i);
+                int newDay = addedDate.getDayOfMonth();
+                int newMonth = addedDate.getMonthValue();
+                int newYear = addedDate.getYear() ;
+                insertAppointmentToDB(title,desc,newDay,newMonth,newYear,hour,minute);
             }
-//            System.out.println("Done repeat "+ reptNum +"month");
         }
 
         else if ("Year".equals(repeatition)){
-            for (int i=1;i<reptNum;i++){
-                addAppointment(title,desc,day,month,year+i,hour,minute);
+            for (int i=1;i<=5;i++){
+                LocalDate addedDate = time.plusYears(reptNum*i);
+                int newDay = addedDate.getDayOfMonth();
+                int newMonth = addedDate.getMonthValue();
+                int newYear = addedDate.getYear() ;
+                insertAppointmentToDB(title,desc,newDay,newMonth,newYear,hour,minute);
             }
-//            System.out.println("Done repeat "+ reptNum +"year");
         }
-
-
     }
 
 
     @FXML
-    private void handleBtnShowAll() {
+    private void handleBtnShowAll() throws ParseException {
+        apArray = loadDataFromDB();
         String temp = "" ;
         for (Appointment item : apArray){
             temp += item.getString() + "\n" ;
@@ -211,20 +201,65 @@ public class CalendarController  {
 
     }
 
-//    private String getStringFromArrayList(ArrayList<Appointment> array){
-//        String temp = "" ;
-//        for (Appointment item : array){
-//            temp += item.getString() + "\n" ;
-//        }
-//        return temp ;
-//    }
 
-    public void addAppointment(String title,String desc,int day,int month,int year,int hour,int minute) throws ParseException {
-        insertAppointmentToDB(title,desc,day,month,year,hour,minute);
-//        int id = getLastIdFromDB()+1;
-//        apArray.add(new Appointment(title,desc,day,month,year,hour,minute,id));
-        apArray = loadDataFromDB();
 
+    @FXML
+    private void handleBtnShow() {
+        String strToShow = "" ;
+        try {
+           databaseService.establishConnection();
+            if (!(showDatePicker.getValue() == null)){
+                LocalDate selectedDate = showDatePicker.getValue();
+                int selDay = selectedDate.getDayOfMonth();
+                int selMonth = selectedDate.getMonthValue();
+                int selYear = selectedDate.getYear();
+
+                String query = "select * from Appointments where " +
+                        "dayNum=" + selDay +
+                        " and monthNum=" + selMonth +
+                        " and yearNum=" + selYear;
+                ResultSet resultSet = databaseService.doExecuteQuery(query);
+
+                while (resultSet.next()) {
+                        //"###"+id+"###\nAppointment : " + title + "\nDescription : "+ description + "\nOn : " +dateStr+ "
+                        //SimpleDateFormat("dd/MM/yyyy HH:mm");
+                        String tempStr = "###" + resultSet.getInt(8) + "###\n" +
+                            "Appointment : " + resultSet.getString(1) + "\n" +
+                            "Description : " + resultSet.getString(2) + "\n" +
+                            "On : " + resultSet.getInt(3) + "/" + resultSet.getInt(4) + "/" + resultSet.getInt(5) +
+                            " " + resultSet.getInt(6) + ":" + resultSet.getInt(7)
+                            + "\n";
+                        strToShow += tempStr;
+                    }
+
+                if ("".equals(strToShow)){ apViewer.setText("You not have any appointments today.");}
+                else { apViewer.setText(strToShow);}
+            }
+            databaseService.closeConnection();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleBtnDeleteID() throws ParseException {
+        String selectedID = deleteIdField.getText();
+
+        if (selectedID != "") {
+            try {
+                databaseService.establishConnection();
+                String query = "DELETE FROM Appointments WHERE id=" + selectedID;
+                databaseService.doExecuteUpdate(query);
+                databaseService.closeConnection();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        handleBtnShowAll();
     }
 
 
@@ -232,27 +267,22 @@ public class CalendarController  {
         ArrayList<Appointment> tempArray = new ArrayList<>() ;
         try
         {
-            Class.forName("org.sqlite.JDBC");
-            String dbURL = "jdbc:sqlite:AppointmentsDB.db";
-            Connection conn = DriverManager.getConnection(dbURL);
-            if (conn != null) {
+            databaseService.establishConnection();
+
                 String query = "select * from Appointments ";
-                Statement statement = conn.createStatement();
-                ResultSet resultSet = statement.executeQuery(query);
+                ResultSet resultSet = databaseService.doExecuteQuery(query);
                 while (resultSet.next()){
-//                    System.out.println("TEMP ADDED");
                     tempArray.add(new Appointment(resultSet.getString(1), //title
                             resultSet.getString(2), //desc
                             resultSet.getInt(3), //day
                             resultSet.getInt(4), //month
                             resultSet.getInt(5), //year
-                            resultSet.getInt(6), //hour
+                            resultSet.getInt(6), //hour5
                             resultSet.getInt(7), //minute
                             resultSet.getInt(8))); //id
                 }
-                statement.close();
-                conn.close();
-            }
+                databaseService.closeConnection();
+
         }
         catch (ClassNotFoundException ex) {ex.printStackTrace(); }
         catch (SQLException ex) {ex.printStackTrace();}
@@ -263,22 +293,42 @@ public class CalendarController  {
         int tempID = -1 ;
         try
         {
-            Class.forName("org.sqlite.JDBC");
-            String dbURL = "jdbc:sqlite:AppointmentsDB.db";
-            Connection conn = DriverManager.getConnection(dbURL);
-            if (conn != null) {
-                String query = "select max(id) from Appointments" ;
-                Statement statement = conn.createStatement();
-                ResultSet resultSet = statement.executeQuery(query);
-                tempID = resultSet.getInt(1)+1;
-                statement.close();
-                conn.close();
-            }
+            databaseService.establishConnection();
+            String query = "select max(id) from Appointments" ;
+            ResultSet resultSet = databaseService.doExecuteQuery(query);
+            tempID = resultSet.getInt(1)+1;
+            databaseService.closeConnection();
+
         }
         catch (ClassNotFoundException ex) {ex.printStackTrace(); }
         catch (SQLException ex) {ex.printStackTrace();}
         return tempID ;
     }
+
+    private void createDBTableIfNotExist(){
+        //  CREATE TABLE "Appointments" ( `title` TEXT NOT NULL, `desc` TEXT, `dayNum` INTEGER NOT NULL, `monthNum` INTEGER NOT NULL, `yearNum` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE )
+        try
+        {
+            databaseService.establishConnection();
+
+                ResultSet resultSet = databaseService.getTable(null,null,"Appointments",null);
+                while (resultSet.next()){
+                    if (resultSet.getString(3).equals("Appointments")){
+                        databaseService.closeConnection();
+                        return ;
+                    }
+                }
+
+                String query = "CREATE TABLE \"Appointments\" ( `title` TEXT NOT NULL, `desc` TEXT, `dayNum` INTEGER NOT NULL, `monthNum` INTEGER NOT NULL, `yearNum` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE )";
+
+                databaseService.doExecute(query);
+                databaseService.closeConnection();
+
+        }
+        catch (ClassNotFoundException ex) {ex.printStackTrace(); }
+        catch (SQLException ex) {ex.printStackTrace();}
+    }
+
 
 
 }
