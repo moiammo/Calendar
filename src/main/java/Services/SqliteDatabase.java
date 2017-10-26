@@ -4,7 +4,7 @@ import java.sql.*;
 
 //5810404936 Yarnadhis Poolsawat
 
-public class DatabaseService {
+public class SqliteDatabase implements  DataSource {
 
 
     private String dbURL;
@@ -15,7 +15,7 @@ public class DatabaseService {
     private ResultSet resultSet;
 
 
-
+    @Override
     public void establishConnection() throws SQLException, ClassNotFoundException {
         Class.forName("org.sqlite.JDBC");
         dbURL = "jdbc:sqlite:AppointmentsDB.db" ;
@@ -23,12 +23,12 @@ public class DatabaseService {
         statement = conn.createStatement();
     }
 
-
+    @Override
     public void closeConnection() throws SQLException {
         statement.close();
         conn.close();
     }
-
+    @Override
     public ResultSet doExecuteQuery(String query) throws SQLException, ClassNotFoundException {
         if (conn != null){ return statement.executeQuery(query); }
         else {
@@ -38,17 +38,17 @@ public class DatabaseService {
         }
         return resultSet ;
     }
-
+    @Override
     public void doExecute(String query) throws SQLException, ClassNotFoundException {
         statement.execute(query);
     }
-
+    @Override
     public void doExecuteUpdate(String query) throws SQLException, ClassNotFoundException {
         statement.executeUpdate(query);
     }
-//    DatabaseMetaData metaData = conn.getMetaData();
-//    ResultSet resultSet = metaData.getTables(null,null,"Appointments",null);
 
+
+    @Override
     public ResultSet getTable(String catalog,String schemaPattern ,String tableNamePattern,String[] types) throws SQLException {
         metaData = conn.getMetaData();
         return metaData.getTables(catalog,schemaPattern,tableNamePattern,types);

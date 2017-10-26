@@ -1,8 +1,7 @@
 package controllers;
 //5810404936 Yarnadhis Poolsawat
 
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
+import Services.DataSource;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -17,7 +16,11 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-import Services.DatabaseService;
+import Services.SqliteDatabase;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import javax.xml.crypto.Data;
 
 public class CalendarController  {
 
@@ -47,11 +50,13 @@ public class CalendarController  {
 //    private int id;
     private ArrayList<String> reptCBoxList = new ArrayList<>();
     private ArrayList<Appointment> apArray = new ArrayList<>();
-    private DatabaseService databaseService;
+    private DataSource dataSource;
 
     @FXML
     private void initialize(){
-        databaseService = new DatabaseService();
+        ApplicationContext bf = new ClassPathXmlApplicationContext("spring.xml");
+        dataSource = (DataSource) bf.getBean("sqlite");
+//        dataSource = new SqliteDatabase();
         reptCBoxList.add("Never");reptCBoxList.add("Day");reptCBoxList.add("Week");
         reptCBoxList.add("Month");reptCBoxList.add("Year");
         reptCBox.getItems().addAll(reptCBoxList) ;
@@ -70,9 +75,9 @@ public class CalendarController  {
     private void handleBtnDelAll() throws ParseException{
         try
         {
-           databaseService.establishConnection();
-           databaseService.doExecuteUpdate("delete From Appointments");
-           databaseService.closeConnection();
+            dataSource.establishConnection();
+            dataSource.doExecuteUpdate("delete From Appointments");
+            dataSource.closeConnection();
         }
         catch (ClassNotFoundException ex) {ex.printStackTrace(); }
         catch (SQLException ex) {ex.printStackTrace();}
@@ -130,12 +135,12 @@ public class CalendarController  {
     private void insertAppointmentToDB(String title,String desc,int dayNum,int monthNum,int yearNum,int hour,int minute) throws ParseException {
         try
         {
-            databaseService.establishConnection();
+            dataSource.establishConnection();
             String query = "insert into Appointments(title,desc,dayNum,monthNum,yearNum,hour,minute) " +
                         "values (\'"+titleField.getText()+"\',\'"+descField.getText()+"\',\'"+dayNum+"\'"+",\'"+monthNum+"\',\'"+yearNum
                         +"\',\'"+hour+"\',\'"+minute+"\')";
-            databaseService.doExecuteUpdate(query);
-            databaseService.closeConnection();
+            dataSource.doExecuteUpdate(query);
+            dataSource.closeConnection();
 
             apArray = loadDataFromDB();
         }
@@ -207,7 +212,7 @@ public class CalendarController  {
     private void handleBtnShow() {
         String strToShow = "" ;
         try {
-           databaseService.establishConnection();
+            dataSource.establishConnection();
             if (!(showDatePicker.getValue() == null)){
                 LocalDate selectedDate = showDatePicker.getValue();
                 int selDay = selectedDate.getDayOfMonth();
@@ -218,7 +223,7 @@ public class CalendarController  {
                         "dayNum=" + selDay +
                         " and monthNum=" + selMonth +
                         " and yearNum=" + selYear;
-                ResultSet resultSet = databaseService.doExecuteQuery(query);
+                ResultSet resultSet = dataSource.doExecuteQuery(query);
 
                 while (resultSet.next()) {
                         //"###"+id+"###\nAppointment : " + title + "\nDescription : "+ description + "\nOn : " +dateStr+ "
@@ -235,7 +240,7 @@ public class CalendarController  {
                 if ("".equals(strToShow)){ apViewer.setText("You not have any appointments today.");}
                 else { apViewer.setText(strToShow);}
             }
-            databaseService.closeConnection();
+            dataSource.closeConnection();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -249,10 +254,10 @@ public class CalendarController  {
 
         if (selectedID != "") {
             try {
-                databaseService.establishConnection();
+                dataSource.establishConnection();
                 String query = "DELETE FROM Appointments WHERE id=" + selectedID;
-                databaseService.doExecuteUpdate(query);
-                databaseService.closeConnection();
+                dataSource.doExecuteUpdate(query);
+                dataSource.closeConnection();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             } catch (SQLException e) {
@@ -267,10 +272,10 @@ public class CalendarController  {
         ArrayList<Appointment> tempArray = new ArrayList<>() ;
         try
         {
-            databaseService.establishConnection();
+            dataSource.establishConnection();
 
                 String query = "select * from Appointments ";
-                ResultSet resultSet = databaseService.doExecuteQuery(query);
+                ResultSet resultSet = dataSource.doExecuteQuery(query);
                 while (resultSet.next()){
                     tempArray.add(new Appointment(resultSet.getString(1), //title
                             resultSet.getString(2), //desc
@@ -281,7 +286,7 @@ public class CalendarController  {
                             resultSet.getInt(7), //minute
                             resultSet.getInt(8))); //id
                 }
-                databaseService.closeConnection();
+            dataSource.closeConnection();
 
         }
         catch (ClassNotFoundException ex) {ex.printStackTrace(); }
@@ -293,11 +298,11 @@ public class CalendarController  {
         int tempID = -1 ;
         try
         {
-            databaseService.establishConnection();
+            dataSource.establishConnection();
             String query = "select max(id) from Appointments" ;
-            ResultSet resultSet = databaseService.doExecuteQuery(query);
+            ResultSet resultSet = dataSource.doExecuteQuery(query);
             tempID = resultSet.getInt(1)+1;
-            databaseService.closeConnection();
+            dataSource.closeConnection();
 
         }
         catch (ClassNotFoundException ex) {ex.printStackTrace(); }
@@ -309,20 +314,20 @@ public class CalendarController  {
         //  CREATE TABLE "Appointments" ( `title` TEXT NOT NULL, `desc` TEXT, `dayNum` INTEGER NOT NULL, `monthNum` INTEGER NOT NULL, `yearNum` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE )
         try
         {
-            databaseService.establishConnection();
+            dataSource.establishConnection();
 
-                ResultSet resultSet = databaseService.getTable(null,null,"Appointments",null);
+                ResultSet resultSet = dataSource.getTable(null,null,"Appointments",null);
                 while (resultSet.next()){
                     if (resultSet.getString(3).equals("Appointments")){
-                        databaseService.closeConnection();
+                        dataSource.closeConnection();
                         return ;
                     }
                 }
 
                 String query = "CREATE TABLE \"Appointments\" ( `title` TEXT NOT NULL, `desc` TEXT, `dayNum` INTEGER NOT NULL, `monthNum` INTEGER NOT NULL, `yearNum` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE )";
 
-                databaseService.doExecute(query);
-                databaseService.closeConnection();
+            dataSource.doExecute(query);
+            dataSource.closeConnection();
 
         }
         catch (ClassNotFoundException ex) {ex.printStackTrace(); }
